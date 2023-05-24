@@ -1,10 +1,21 @@
 from __future__ import annotations
+from random import shuffle
 
 from cards import Card
 
 class Deck:
     """Deck of 52 cards (4 suits of 13 cards)
+
+    Attributes:
+        deck (list[Card]): A deck of 52 cards
+
+    Methods:
+        fuse(d: Deck) -> None: Fuse two deck together
+        shuffle() -> None: Shuffle the deck (randomize the cards placement)
+        pick(index: int) -> Card: Pick a card from the deck (index is optional, if no index then pick the first card)
+        draw() -> Card: Draw the first card of the deck 
     """
+
     # private attribute
     __suits: list[str] = ["hearts", "diamonds", "spades", "clubs"]
 
@@ -17,7 +28,7 @@ class Deck:
                 c = Card(nb, self.__suits[suit])
                 self.deck.append(c)
 
-    # Default functions
+    # Default methods
     def __str__(self) -> str:
         """Return the deck as a string
 
@@ -34,7 +45,7 @@ class Deck:
         """
         return len(self.deck)
 
-    # Public functions
+    # Public methods
     def fuse(self, d: Deck) -> None:
         """Fuse two decks together
 
@@ -46,7 +57,6 @@ class Deck:
     def shuffle(self) -> None:
         """Shuffle the deck
         """
-        from random import shuffle
         shuffle(self.deck)
 
     def pick(self, index: int = ...) -> Card:
@@ -63,10 +73,21 @@ class Deck:
             return self.deck.pop(0)
         return self.deck.pop(index)
     
+    def draw(self) -> Card:
+        """Draw the first card of the deck
+
+        The deck is shuffled each time a card is drawn.
+
+        Returns:
+            Card: the first card of the deck
+        """
+        return self.pick()
+    
 if __name__ == "__main__":
     d = Deck()
 
-    for i in range(5):
-        print(d.pick())
+    # for i in range(5):
+    #     print(d.pick())
+
     print(d)
-    print(len(d))
+    # print(len(d))
