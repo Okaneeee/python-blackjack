@@ -6,13 +6,13 @@ class Card:
     """Card of a deck
 
     Args:
-        number (int): number of the card
-        suit (str): suit of the card
+        number (int): Number of the card
+        suit (str): Suit of the card
 
     Attributes:
-        number (int): number of the card
-        suit (str): suit of the card
-        value (int): value of the card     
+        number (int): Number of the card
+        suit (str): Suit of the card
+        value (int): Value of the card     
     """
     # Constructor
     def __init__(self, number: int, suit: str) -> None:
@@ -20,7 +20,7 @@ class Card:
         self.suit: str = suit
         self.value: int = self.__cardValue()
 
-    # Default functions
+    # Default methods
     def __repr__(self) -> str:
         """Return a string representation of the card
 
@@ -30,10 +30,10 @@ class Card:
         return f"{self.__numberFormat()}{self.__suitFormat()}"
     
     def __str__(self) -> str:
-        """Return a string representation of the card
+        """Return the card as a string
 
         Returns:
-            str: string representation of the card
+            str: the card as a string
         """
         return self.__repr__()
 
@@ -45,7 +45,7 @@ class Card:
         """
         return len(self.__str__())
 
-    # Private functions
+    # Private methods
     def __numberFormat(self) -> str:
         """Make a good format for the number of the card
 
@@ -101,8 +101,8 @@ class Card:
             case _:
                 return self.number
 
-    # Public functions
+    # Public methods
     
 if __name__ == "__main__":
-    c = Card(5, "hearts")
+    c = Card(13, "clubs")
     print(c)
