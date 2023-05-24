@@ -33,7 +33,7 @@ class Game:
 
     Args:
         player (Player): The player
-        dealer (Dealer, optional): The dealer (Defaults as a new Dealer)
+        dealer (Dealer): The dealer (Optional, defaults to Dealer)
     
     Attributes:
         player (Player): The player
@@ -71,12 +71,17 @@ class Game:
         """
         """
         toBet = int(input("How much do you want to bet?\n"))
-
+        self.player.setBet(toBet)
 
     def deal(self) -> bool:
         """
         """
-        ...
+        act = input("Did you finish your bet? (Y/N)\n")
+        while act != "Y" and act != "N":
+            act = input("Did you finish your bet? (Y/N)\n")
+        if act == "N":
+            return False
+        return True
 
     # In-Game methods
     def split(self) -> list[Game]:
