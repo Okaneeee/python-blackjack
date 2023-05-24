@@ -1,31 +1,84 @@
+"""
+Blackjack rules:
+    - 1 deck of 52 cards
+    - 2 cards for the player
+    - 2 cards for the dealer (1 hidden)
+    - Player can:
+        - Hit (draw a card)
+        - Stand (end the draw phase)
+        - Double (draw a card and double the bet)
+        - Split (split the hand in two if the two cards are of the value of 10) 
+        - Insurance (only if dealer might has blackjack (ace as first card))   
+
+    - Dealer must hit if his score is less than 17
+    - Dealer must stand if his score is more than 17
+
+    - If player has blackjack (21), he wins 3x his bet
+    - If player has more than the dealer, he wins 2x his bet
+    - If player wins insurance, he wins 2.5x his bet
+    - If player has the same score as the dealer, he gets his bet back
+    - If player has more than 21, he loses his bet
+    - If player has less than the dealer, he loses his bet
+
+    - Blackjack only occur with the first two cards
+"""
 from __future__ import annotations
+
+from deck import Deck
+from player import Player, Dealer
+
 
 class Game:
     """Game of blackjack
 
-       Blackjack rules:
-            - 1 deck of 52 cards
-            - 2 cards for the player
-            - 2 cards for the dealer (1 hidden)
-            - Player can:
-                - Hit (draw a card)
-                - Stand (end the draw phase)
-                - Double (draw a card and double the bet)
-                - Split (split the hand in two if the two cards are of the value of 10) 
-                - Insurance (if dealer might has blackjack)   
+    Args:
+        player (Player): The player
+        dealer (Dealer, optional): The dealer (Defaults as a new Dealer)
+    
+    Attributes:
+        player (Player): The player
+        dealer (Dealer): The dealer
+        deck (Deck): The deck
 
-            - Dealer must hit if his score is less than 17
-            - Dealer must stand if his score is more than 17
-
-            - If player has blackjack (21), he wins 1.5x his bet
-            - If player has more than the dealer, he wins his bet
-            - If player has the same score as the dealer, he gets his bet back
-            - If player has more than 21, he loses his bet
-            - If player has less than the dealer, he loses his bet
+    Methods:
+        bet() -> None: Bet money
+        deal() -> bool: Deal cards
+        split() -> list[Game]: Split the game in two
+        double() -> bool: Double the bet and draw a card
+        hit() -> bool: Draw a card
+        stand() -> bool: End the draw phase
+        insurance() -> bool: Check if dealer has blackjack
     """
-    def __init__(self) -> None:
-        pass
+    # Constructor
+    def __init__(self, player: Player, dealer: Dealer = Dealer()) -> None:
+        self.player: Player = player
+        self.dealer: Dealer = dealer
+        self.deck: Deck = Deck()
 
+    # Default methods
+    def __str__(self) -> str:
+        """Returns the game as a string
+
+        Returns:
+            str: the game as a string
+        """
+        return f"{self.player}\n{self.dealer}"
+
+    # Public methods
+
+    # Before game methods
+    def bet(self) -> None:
+        """
+        """
+        toBet = int(input("How much do you want to bet?\n"))
+
+
+    def deal(self) -> bool:
+        """
+        """
+        ...
+
+    # In-Game methods
     def split(self) -> list[Game]:
         """
         To verify: 
@@ -40,16 +93,6 @@ class Game:
             - if game1.score & game2.score > dealer.score: betted*4
             - if gameX.score = dealder.score: betted = betted
             - else (lose) betted = 0
-        """
-        ...
-
-    def bet(self, value: int) -> None:
-        """
-        """
-        ...
-
-    def deal(self) -> bool:
-        """
         """
         ...
 
@@ -81,7 +124,21 @@ class Game:
         Returns:
             bool: True if he has, else False
         """
+        """
+        To verify:
+            - saved money >= betted money / 2
+        Results:
+            - Dealer has blackjack
+            - Dealer doens't have blackjack
+        """
         return True if ... else False
-    
+
+    # Main method
+    def play(self) -> None:
+        """
+        """
+        ...
+
 if __name__  == "__main__":
-    pass
+    g = Game(Player("J1"))
+    print(g)
