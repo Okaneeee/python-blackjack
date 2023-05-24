@@ -7,7 +7,7 @@ class Player:
 
     Args:
         name (str): Name of the player
-        balance (str, optional): Current balance of the player (Defaults to 1000)
+        balance (str): Current balance of the player (Optional, defaults to 1000)
 
     Attributes:
         name (str): Name of the player
@@ -36,6 +36,11 @@ class Player:
         self.bet = value
 
     def handValue(self) -> int:
+        """Returns the value of the player hand
+
+        Returns:
+            total (int): Value of the player hand        
+        """
         # Empty hand case
         if len(self.hand) == 0:
             return 0
@@ -54,7 +59,31 @@ class Player:
             else:
                 total += card.value
         return total
+    
+    def addCard(self, card: Card) -> None:
+        """Add a card to the player hand
 
+        Args:
+            card (Card): Card to add to the player hand
+        """
+        self.hand.append(card)
+
+    def reset(self) -> None:
+        """Reset the player hand and bet
+        """
+        self.__resetHand()
+        self.__resetBet()
+
+    # Private methods
+    def __resetHand(self) -> None:
+        """Reset the player hand
+        """
+        self.hand = []
+
+    def __resetBet(self) -> None:
+        """Reset the player bet
+        """
+        self.bet = 0
 
 class Dealer:
     """Dealer of the game
@@ -76,7 +105,43 @@ class Dealer:
     def __str__(self) -> str:
         return f"{self.name} has {self.hand}"
     
-    def handValue(self):...
+    def handValue(self) -> int:
+        """Returns the value of the dealer hand
+
+        Returns:
+            total (int): Value of the dealer hand        
+        """
+        # Empty hand case
+        if len(self.hand) == 0:
+            return 0
+
+        # Sorting the hand in order to take the best value of the ace (also removing sensitivity to the addition order)
+        dealerHand = sorted(self.hand, key=lambda x: x.value, reverse=True)
+        total: int = 0
+        for card in dealerHand:
+            # If it's an ace
+            if card.value == 1:
+                # And the hand value is higher than 11
+                # Then ace's value is 1 (can't be 11, otherwise the hand value would be 22+)
+                # Else ace's value is 11
+                total += 1 if total >= 11 else 11
+            # Otherwise we add the card default value
+            else:
+                total += card.value
+        return total
+    
+    def addCard(self, card: Card) -> None:
+        """Add a card to the dealer hand
+
+        Args:
+            card (Card): Card to add to the dealer hand
+        """
+        self.hand.append(card)
+
+    def reset(self) -> None:
+        """Reset the dealer hand
+        """
+        self.hand = []
 
 # Test part
 if __name__ == "__main__":
