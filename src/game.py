@@ -23,10 +23,11 @@ Blackjack rules:
     - Blackjack only occur with the first two cards
 """
 from __future__ import annotations
+from time import sleep
+from os import system
 
 from deck import Deck
 from player import Player, Dealer
-
 
 class Game:
     """Game of blackjack
@@ -39,23 +40,22 @@ class Game:
         player (Player): The player
         dealer (Dealer): The dealer
         deck (Deck): The deck
-
-    Methods:
-        bet() -> None: Bet money
-        deal() -> bool: Deal cards
-        split() -> list[Game]: Split the game in two
-        double() -> bool: Double the bet and draw a card
-        hit() -> bool: Draw a card
-        stand() -> bool: End the draw phase
-        insurance() -> bool: Check if dealer has blackjack
     """
+    
+    # Private attributes
+    __enum: list[str] = []
+    __firstTurn: bool = True
+    __hasStand: bool = False
+    __hasBust: bool = False
+    __hasInsurance: bool = False
+
     # Constructor
     def __init__(self, player: Player, dealer: Dealer = Dealer()) -> None:
         self.player: Player = player
         self.dealer: Dealer = dealer
         self.deck: Deck = Deck()
 
-    # Default methods
+    # Default method
     def __str__(self) -> str:
         """Returns the game as a string
 
@@ -65,27 +65,231 @@ class Game:
         return f"{self.player}\n{self.dealer}"
 
     # Public methods
+    def resetGame(self) -> None:
+        """Reset the game
+        """
+        self.player.reset()
+        self.dealer.reset()
+        self.deck.reset()
+
+    def avalaibleActions(self) -> str:
+        """Return the avalaible actions
+
+        Returns:
+            str: the avalaible actions
+        """
+        final: str = "HIT | STAND "
+        self.__enum = ["hit", "stand"]
+
+        if(self.__firstTurn and self.player.enoughMoney("double")):
+            final = "DOUBLE | " + final # Can only double on first turn
+            self.__enum.append("double")
+        if(self.player.canSplit() and self.player.enoughMoney("split")):
+            final += "| SPLIT " # Can only split if it's first turn and both cards are of the same value
+            self.__enum.append("split")
+        if(self.dealer.canInsurance() and self.player.enoughMoney("insurance") and not self.__hasInsurance):
+            final += "| INSURANCE " # Can only insurance if it's first turn and the first card of the dealer is an ace or a 10
+            self.__enum.append("insurance")
+
+        final += '> '
+
+        return final
+
+    def showHands(self) -> None:
+        """Show the hands of the player and the dealer
+        """
+        if(self.__hasStand or self.__hasBust or self.__hasInsurance):
+            print(f"{self.player} ({self.player.handValue()})")
+            print(f"{self.dealer} ({self.dealer.handValue()})")
+        else:
+            print(f"{self.player} ({self.player.handValue()})")
+            self.dealer.displayHand()
+
+    def betResults(self, winner: bool = None) -> None: # type: ignore
+        """Show the bet results
+
+        Args:
+            winner (bool): True if player won, else False
+        """
+        if(winner == None):
+            won = self.player.bet
+            self.player.giveMoney(won)
+            print(f"You got back your ${won}")
+        elif(winner):
+            if(self.__hasInsurance):
+                won = self.player.bet * 2.5
+                self.player.giveMoney(won) # type: ignore
+                print(f"Congratulations! You and won: ${won}!")
+            elif(self.player.hasBlackjack()):
+                won = self.player.bet * 3
+                self.player.giveMoney(won)
+                print(f"Congratulations! You got a blackjack and won: ${won}!")
+            else:
+                won = self.player.bet * 2
+                self.player.giveMoney(won)
+                print(f"Congratulations! You won: ${won}!")
+        else:
+            print(f"Too bad! You lost ${self.player.bet}!")
+
+    # Game phases methods
+    def __startPhase(self) -> None:
+        """Start the game
+        """
+        print("----> Game start")
+        print(f"Player: {self.player.name}") # Player reminder
+        print(f"Balance: ${self.player.balance}\n") # Balance reminder
+
+    def __betPhase(self) -> None:
+        """Bet phase
+        """
+        print("----> Bet phase")
+        self.bet()
+        betEnd = self.deal()
+        while not (betEnd):
+            self.bet()
+            betEnd = self.deal()
+        print(f"You bet ${self.player.bet}\n")
+    
+    def __results(self, dealerBust: bool = False) -> None:
+        """Show the game results
+        """
+        print("----> Game results")
+        self.showHands()
+        print()
+        if(self.__hasBust): # Player busted
+            print("You busted! Dealer won")
+            self.betResults(False)
+        elif(self.__hasInsurance):
+            print("Dealer had blackjack ! You won via insurance")
+            self.betResults(True)
+        elif(dealerBust): # Dealer busted
+            print("Dealer busted! You won")
+            self.betResults(True)
+        elif(self.player.handValue() > self.dealer.handValue()): # Player won
+            print("You won!")
+            self.betResults(True)
+        elif(self.player.handValue() == self.dealer.handValue()):
+            print("Tie!")
+            self.betResults()
+        else: # Dealer won
+            print("Dealer won!")
+            self.betResults(False)
+
+    def __playerTurn(self) -> None:
+        """Player turn
+        """
+        sleep(0.4)
+        print("--> Your turn\n")
+        sleep(0.5)
+        while not (self.__hasStand or self.__hasBust):
+            # Showing both player's and dealer's hands
+            self.showHands()
+
+            # Asking for actions
+            print("\nWhat do you want to do?")
+            action = input(self.avalaibleActions()).lower()
+            sleep(0.7)
+
+            # Invalid action case
+            if (action not in self.__enum):
+                print("You can't do that!")
+            else:
+                match action:
+                    case "stand":
+                        self.stand()
+                    case "insurance":
+                        if(self.insurance()):
+                            self.player.giveMoney(self.player.bet*2)
+                            break
+                        else:
+                            print("Dealer doesn't have blackjack.")
+                            sleep(0.5)
+                    case "hit":
+                        self.hit(self.player)
+                        if(self.player.hasBust()):
+                            self.__hasBust = True
+                            break
+                        sleep(0.4)
+                    case "double":
+                        self.double()
+                        break
+                    case "split":
+                        print("Not implemented yet, sorry!")
+                        pass
+
+    def __dealerTurn(self) -> None:
+        """Dealer turn
+        """
+        # Dealer can play if:
+        #   - Player standed
+        #   - It's not an insurance win
+        #   - Player didn't bust
+        #   - Player have a blackjack
+        if (self.__hasStand and not self.__hasInsurance and not self.__hasBust and not self.player.hasBlackjack()):
+            print("\n--> Dealer is playing!")
+            self.showHands()
+            sleep(0.6)
+            while not (self.dealer.shouldStand()):
+                print()
+                self.hit(self.dealer)
+                sleep(0.4)
+                self.showHands()
+                sleep(0.4)
+
+    def __endPhase(self) -> None:
+        """End of the game
+        """
+        print("----> Game end")
+        replay = input("Do you want to play again? (Y/N) ").upper()
+        sleep(0.5)
+        if replay == 'Y':
+            self.__clearTerminal()
+            self.play()
+        else:
+            print("Goodbye!")
+            exit()
 
     # Before game methods
     def bet(self) -> None:
+        """Ask the player to bet
         """
-        """
-        toBet = int(input("How much do you want to bet?\n"))
-        self.player.setBet(toBet)
+        boo: bool = True
+        while(boo):
+            try:
+                toBet = int(input(f"Bet: ${self.player.bet}   Balance: ${self.player.balance}\nHow much do you want to bet? "))
+                self.player.setBet(toBet)
+                boo = False
+            except ValueError:
+                print("You can't bet that much money!")
 
     def deal(self) -> bool:
+        """Ask the player if he finished betting
+
+        Returns:
+            bool: True if the player finished betting, False otherwise
         """
-        """
-        act = input("Did you finish your bet? (Y/N)\n")
-        while act != "Y" and act != "N":
-            act = input("Did you finish your bet? (Y/N)\n")
+        act = input(f"\nBet: ${self.player.bet}   Balance: ${self.player.balance}\nDid you finish your bet? (Y/N) ").upper()
+        # NOTE: remove when interface
+        while (act != "Y" and act != "N"):
+            act = input(f"\nBet: ${self.player.bet}   Balance: ${self.player.balance}\nDid you finish your bet? (Y/N) ").upper()
         if act == "N":
             return False
         return True
 
-    # In-Game methods
-    def split(self) -> list[Game]:
+    def start(self) -> None:
+        """Deal the cards to the player and the dealer
         """
+        for _ in range(2):
+            c = self.deck.draw()
+            self.player.addCard(c)
+            c = self.deck.draw()
+            self.dealer.addCard(c)
+
+    # In-Game methods
+    def split(self) -> list[Game]: # type: ignore
+        """
+        Not implemented yet
+        
         To verify: 
             - saved money >= betted money
             - card 1 & 2 = 10 each (20 total)
@@ -99,51 +303,106 @@ class Game:
             - if gameX.score = dealder.score: betted = betted
             - else (lose) betted = 0
         """
+        self.__firstTurn = False
         ...
 
-    def double(self) -> bool:
+    def double(self) -> None:
         """
-        Return true when called
+        Draw a card and double the bet
         """
-        # TODO: draw a card and add it to player hand
-        return True
+        self.hit(self.player)
+        self.player.setBet(self.player.bet)
+        self.stand()
 
-    def hit(self) -> bool: 
-        """
-        To verify:
-            - game.value > 21 ? true : false
-        """
-        ...
+    def hit(self, entity: Player | Dealer) -> None: 
+        """Draw a card and add it to the entity's hand
 
-    def stand(self) -> bool:
+        Args:
+            entity (Player | Dealer): The entity that will draw a card
         """
-        Return true when called
-        (Basically end the draw phase)
+        c = self.deck.draw()
+        entity.addCard(c)
+        self.__firstTurn = False
+    
+    def stand(self) -> None:
+        """Basically end the "draw" phase
         """
-        return True
+        self.__hasStand = True # Ending turn
 
     def insurance(self) -> bool:
         """Check if dealer has blackjack
-        Can only be called if dealer has an ace as first card
+        Can only be called if dealer has an ace or a 10+ as first card
 
         Returns:
             bool: True if he has, else False
         """
+        self.player.removeMoney(int(self.player.bet/2))
+        if(self.dealer.hasBlackjack()):
+            self.__hasInsurance = True
+        return self.__hasInsurance
+
+    # Private methods
+    def __checkGame(self) -> None:
+        """Check if the game status
         """
-        To verify:
-            - saved money >= betted money / 2
-        Results:
-            - Dealer has blackjack
-            - Dealer doens't have blackjack
+
+        # Resetting dealer, player and deck
+        if(self.player.balance == 0):
+            print("We're giving you back $1000\n")
+            self.player.reset()
+        if(self.player.bet > 0):
+            self.player.bet = 0
+        self.deck.reset()
+        self.player.resetHand()
+        self.dealer.reset()
+
+        # Resetting game settings
+        self.__firstTurn = True
+        self.__hasStand = False
+        self.__hasBust = False
+        self.__hasInsurance = False
+
+    def __clearTerminal(self) -> None:
+        """Clear the terminal
         """
-        return True if ... else False
+        system("cls||clear")
 
     # Main method
     def play(self) -> None:
+        """Play the game
         """
-        """
-        ...
+        # Starting the game
+        self.__startPhase()
+        
+        # Verifying game state
+        self.__checkGame()
+        
+        sleep(0.7)
+
+        # Starting bet phase
+        self.__betPhase()
+
+        sleep(0.7)
+
+        # Starting game phase
+        print("----> Game phase")
+        self.start()
+
+        # Player turn
+        self.__playerTurn()
+
+        # Dealer turn
+        self.__dealerTurn()
+
+        # Show results
+        sleep(0.7)
+        print()
+        self.__results(self.dealer.hasBust())
+        print()
+        sleep(0.5)
+
+        # End of the game
+        self.__endPhase()
 
 if __name__  == "__main__":
-    g = Game(Player("J1"))
-    print(g)
+    pass
