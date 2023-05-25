@@ -43,6 +43,16 @@ class Player:
 
     # Public methods
     def setBet(self, value: int) -> None:
+        """Set the bet of the player
+
+        Args:
+            value (int): Value of the bet
+
+        Raises:
+            ValueError: If the bet value is higher than the player balance
+        """
+        if value > self.balance:
+            raise ValueError("Bet value is higher than the player balance")
         self.balance -= value
         self.bet += value
 

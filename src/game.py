@@ -260,7 +260,7 @@ class Game:
                 self.player.setBet(toBet)
                 boo = False
             except ValueError:
-                print("You can't bet that much money!")
+                print("You can't bet that!")
 
     def deal(self) -> bool:
         """Ask the player if he finished betting
@@ -347,7 +347,7 @@ class Game:
         """
 
         # Resetting dealer, player and deck
-        if(self.player.balance == 0):
+        if(self.player.balance >= 0):
             print("We're giving you back $1000\n")
             self.player.reset()
         if(self.player.bet > 0):
