@@ -1,0 +1,7 @@
+# Next:
+- Split function
+
+# After:
+- Interface
+- Data part (.JSON/.ini/.cfg ?) (save, load etc...)
+- Multiplayer 
