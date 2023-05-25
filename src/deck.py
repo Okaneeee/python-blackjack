@@ -8,12 +8,6 @@ class Deck:
 
     Attributes:
         deck (list[Card]): A deck of 52 cards
-
-    Methods:
-        fuse(d: Deck) -> None: Fuse two deck together
-        shuffle() -> None: Shuffle the deck (randomize the cards placement)
-        pick(index: int) -> Card: Pick a card from the deck (index is optional, if no index then pick the first card)
-        draw() -> Card: Draw the first card of the deck 
     """
 
     # private attribute
@@ -44,6 +38,15 @@ class Deck:
             int: number of cards in the deck
         """
         return len(self.deck)
+
+    # Verification method
+    def isEmpty(self) -> bool:
+        """Return True if the deck is empty
+
+        Returns:
+            bool: True if the deck is empty, False otherwise
+        """
+        return (len(self) == 0)
 
     # Public methods
     def fuse(self, d: Deck) -> None:
@@ -82,12 +85,17 @@ class Deck:
             Card: the first card of the deck
         """
         return self.pick()
-    
+
+    def reset(self) -> None:
+        """Reset the deck
+        """
+        self.__init__()
+
 if __name__ == "__main__":
     d = Deck()
 
-    # for i in range(5):
-    #     print(d.pick())
+    for i in range(5):
+        print(d.pick())
 
     print(d)
-    # print(len(d))
+    print(len(d))
