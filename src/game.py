@@ -312,7 +312,12 @@ class Game:
         """
         self.hit(self.player)
         self.player.setBet(self.player.bet)
-        self.stand()
+
+        # Checking if player busted
+        if(self.player.hasBust()):
+            self.__hasBust = True
+        else:
+            self.stand()
 
     def hit(self, entity: Player | Dealer) -> None: 
         """Draw a card and add it to the entity's hand
