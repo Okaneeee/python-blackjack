@@ -48,6 +48,7 @@ class Game:
     __hasStand: bool = False
     __hasBust: bool = False
     __hasInsurance: bool = False
+    __triggerInsurance: bool = False
 
     # Constructor
     def __init__(self, player: Player, dealer: Dealer = Dealer()) -> None:
@@ -87,7 +88,7 @@ class Game:
         if(self.player.canSplit() and self.player.enoughMoney("split")):
             final += "| SPLIT " # Can only split if it's first turn and both cards are of the same value
             self.__enum.append("split")
-        if(self.dealer.canInsurance() and self.player.enoughMoney("insurance") and not self.__hasInsurance):
+        if(self.dealer.canInsurance() and self.player.enoughMoney("insurance") and self.__firstTurn and not self.__triggerInsurance):
             final += "| INSURANCE " # Can only insurance if it's first turn and the first card of the dealer is an ace or a 10
             self.__enum.append("insurance")
 
@@ -342,6 +343,7 @@ class Game:
             bool: True if he has, else False
         """
         self.player.removeMoney(int(self.player.bet/2))
+        self.__triggerInsurance = True
         if(self.dealer.hasBlackjack()):
             self.__hasInsurance = True
         return self.__hasInsurance
@@ -366,6 +368,7 @@ class Game:
         self.__hasStand = False
         self.__hasBust = False
         self.__hasInsurance = False
+        self.__triggerInsurance = False
 
     def __clearTerminal(self) -> None:
         """Clear the terminal
