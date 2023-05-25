@@ -100,8 +100,6 @@ class Card:
                 return 10
             case _:
                 return self.number
-
-    # Public methods
     
 if __name__ == "__main__":
     c = Card(13, "clubs")
